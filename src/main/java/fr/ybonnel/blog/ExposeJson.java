@@ -20,9 +20,11 @@ public class ExposeJson {
     public static void main(String[] args) {
         get("/hello", () -> new Response<>("Hello world"));
 
-        get("/hello/object", () -> new Response<>(new HelloObject("Hello", "World")));
+        get("/hello/object", () ->
+                new Response<>(new HelloObject("Hello", "World")));
 
-        get("/hello/:name", (param, routeParams) -> new Response<>("Hello " + routeParams.getParam("name")));
+        get("/hello/:name", (param, routeParams) ->
+                new Response<>("Hello " + routeParams.getParam("name")));
 
         start();
     }
