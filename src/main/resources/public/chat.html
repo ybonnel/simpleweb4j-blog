@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Chat</title>
+    <link type="text/css" rel="stylesheet" href="webjars/bootstrap/3.0.3/css/bootstrap.min.css">
+
+</head>
+<body ng-app="app">
+<div ng-controller="ChatCtrl">
+    <form>
+    Pseudo : <input type="text" ng-model="userTmp" />
+        <button type="submit" ng-click="changeUser(userTmp)">ok</button>
+    </form>
+    <div class="chat-content">
+        <ul>
+            <li ng-repeat="message in messages">{{message.user}} : {{message.texte}}</li>
+        </ul>
+    </div>
+    <div>
+        <form>
+            <input type="text" ng-model="message" ng-disabled="user === undefined"/>
+            <button type="submit" ng-disabled="user === undefined" ng-click="sendMessage()">ok</button>
+        </form>
+    </div>
+</div>
+<script type="text/javascript" src="webjars/angularjs/1.2.8/angular.js"></script>
+<script>
+    var app = angular.module('app', []);
+    app.controller('ChatCtrl', function ($scope) {
+        $scope.messages = [];
+
+        $scope.changeUser = function(newUser) {
+            $scope.user = newUser;
+            if ($scope.ws) {
+                $scope.ws.close();
+            }
+            $scope.ws = new WebSocket("ws://localhost:9999/chat/" + $scope.user);
+            $scope.ws.onmessage = function(message) {
+                $scope.$apply(function() {
+                    $scope.messages.push(JSON.parse(message.data));
+                });
+            };
+        };
+
+        $scope.sendMessage = function() {
+            $scope.ws.send(JSON.stringify($scope.message));
+            $scope.message = "";
+        }
+    });
+</script>
+</body>
+</html>

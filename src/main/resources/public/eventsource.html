@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en" ng-app="app">
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <h1 ng-controller="TimeCtrl">{{time}}</h1>
+
+        <script src="webjars/angularjs/1.2.8/angular.js"></script>
+        <script>
+            var app = angular.module('app', []);
+            app.controller('TimeCtrl', function ($scope) {
+                var sse = new EventSource("/horloge");
+                sse.addEventListener("message", function(event){
+                    $scope.$apply(function() {
+                        $scope.time = JSON.parse(event.data);
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
