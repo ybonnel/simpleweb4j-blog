@@ -1,39 +1,45 @@
 package fr.ybonnel.blog.websocket;
 
-import fr.ybonnel.blog.websocket.WebSocket.Message;
-import fr.ybonnel.simpleweb4j.handlers.RouteParameters;
-import fr.ybonnel.simpleweb4j.handlers.websocket.SimpleWebSocketListener;
+import fr.ybonnel.simpleweb4j.handlers.websocket.WebSocketListener;
 import fr.ybonnel.simpleweb4j.handlers.websocket.WebSocketSession;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import java.io.IOException;
+import java.util.Date;
 
 import static fr.ybonnel.simpleweb4j.SimpleWeb4j.start;
 import static fr.ybonnel.simpleweb4j.SimpleWeb4j.websocket;
 
-public class WebSocket extends SimpleWebSocketListener<String, Message> {
+public class WebSocket {
 
-    private final String user;
-    private WebSocketSession<Message> session;
+    private static ConcurrentHashSet<WebSocketSession<Message>> sessionOpenned = new ConcurrentHashSet<>();
 
-    public WebSocket(RouteParameters routeParameters) {
-        super(String.class);
-        this.user = routeParameters.getParam("name");
+    public static class Message {
+        String user;
+        String texte;
+        Date date;
+
+        public Message(String user, String texte) {
+            this.user = user;
+            this.texte = texte;
+            this.date = new Date();
+        }
     }
 
-    @Override public void onClose(int statusCode, String reason) {
-        sessionOpenned.remove(session);
+    public static void main(String[] args) {
+
+        websocket("/chat/:name", (routeParameters) ->
+                WebSocketListener.<String, Message>newBuilder(String.class)
+                    .onConnect(sessionOpenned::add)
+                    .onMessage((session, texte) ->
+                            sendMessageToAllSession(new Message(routeParameters.getParam("name"), texte)))
+                    .onClose((session, cause) -> sessionOpenned.remove(session))
+                    .build()
+        );
+
+        start();
     }
 
-    @Override public void onConnect(WebSocketSession<Message> session) {
-        this.session = session;
-        sessionOpenned.add(session);
-    }
-
-    @Override public void onMessage(String texte) {
-        Message message = new Message(user, texte);
-        sendMessageToAllSession(message);
-    }
 
     private static void sendMessageToAllSession(Message message) {
         sessionOpenned.forEach(session -> sendMessageToOneSession(message, session));
@@ -45,25 +51,6 @@ public class WebSocket extends SimpleWebSocketListener<String, Message> {
             session.sendMessage(message);
         } catch (IOException ignore) {
         }
-    }
-
-    private static ConcurrentHashSet<WebSocketSession<Message>> sessionOpenned = new ConcurrentHashSet<>();
-
-    public static class Message {
-        String user;
-        String texte;
-
-        public Message(String user, String texte) {
-            this.user = user;
-            this.texte = texte;
-        }
-    }
-
-    public static void main(String[] args) {
-
-        websocket("/chat/:name", WebSocket::new);
-
-        start();
     }
 
 }
