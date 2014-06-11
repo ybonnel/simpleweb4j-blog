@@ -4,9 +4,11 @@ import fr.ybonnel.simpleweb4j.handlers.Response;
 import fr.ybonnel.simpleweb4j.handlers.eventsource.EndOfStreamException;
 import fr.ybonnel.simpleweb4j.handlers.eventsource.ReactiveHandler;
 import fr.ybonnel.simpleweb4j.handlers.eventsource.ReactiveStream;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -63,7 +65,7 @@ public class ReactiveEventSource {
         }
     }
 
-    private static ConcurrentHashSet<ReactiveHandler<Event>> handlers = new ConcurrentHashSet<>();
+    private static Set<ReactiveHandler<Event>> handlers = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public static void main(String[] args) {
 
