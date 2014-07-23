@@ -1,6 +1,5 @@
 package fr.ybonnel.blog;
 
-import com.jayway.awaitility.Awaitility;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
@@ -14,7 +13,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -98,10 +96,10 @@ public class CompletableFutureTest {
         String longestTitle = CompletableFuture.allOf(titles.toArray(new CompletableFuture[titles.size()]))
                 // apply something after all future has been completed.
                 .thenApply((v) -> titles.stream()
-                                // Get content of future (the title)
-                                .map(cf -> cf.getNow(""))
+                        // Get content of future (the title)
+                        .map(cf -> cf.getNow(""))
                                 // Get Max by length.
-                                .max(Comparator.comparing(String::length)))
+                        .max(Comparator.comparing(String::length)))
                 .get() // Get content of future
                 .get(); // Get content of optional.
 
